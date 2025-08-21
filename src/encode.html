@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTML Encrypt</title>
+<link rel="stylesheet" href="style/encode.css" />
+</head>
+<body>
+
+<div class="container">
+  <h2>HTML Encrypt<br><small style="font-size:14px;color:#888;">Auto Browser-Ready</small></h2>
+  
+  <select id="method">
+    <option value="base64">Base64</option>
+    <option value="entities">HTML Entities</option>
+    <option value="hex">Hex</option>
+  </select>
+
+  <textarea id="input" placeholder="Masukkan HTML asli atau hasil encode di sini..."></textarea>
+  
+  <div class="btn-group-top">
+    <button id="encodeBtn" class="btn-primary">Encode</button>
+    <button id="downloadBtn" class="btn-success">Unduh</button>
+  </div>
+  <div class="btn-group-bottom">
+    <button id="clearBtn" class="btn-danger">Bersihkan</button>
+  </div>
+
+  <div class="output-wrapper">
+    <button id="copyBtn" class="copy-btn" title="Salin ke clipboard">
+      <svg viewBox="0 0 24 24">
+        <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 18H8V7h11v16z"/>
+      </svg>
+    </button>
+    <textarea id="output" placeholder="Hasil akan muncul di sini..."></textarea>
+  </div>
+
+  <div class="credit">Created by ILHAM A.</div>
+</div>
+
+<script>
+// Encode modern
+function encodeByMethod(method, text) {
+  let encoded='', wrapper='';
+  if(method==='base64'){
+    encoded = btoa(new TextEncoder().encode(text).reduce((data,byte)=>data+String.fromCharCode(byte),''));
+    wrapper=`<!DOCTYPE html><html><body><script>
+      const encoded="${encoded}";
+      const decoded=new TextDecoder().decode(Uint8Array.from(atob(encoded).split("").map(c=>c.charCodeAt(0))));
+      document.open();
+      document.write(decoded);
+      document.close();
+    <\/script></body></html>`;
+  }
+  else if(method==='entities'){
+    encoded = text.replace(/`/g,'\\`'); // escape backtick
+    let temp=document.createElement('textarea');
+    temp.textContent=encoded;
+    encoded=temp.innerHTML;
+    wrapper=`<!DOCTYPE html><html><body><script>
+      const encodedEntities=\`${encoded}\`;
+      const textarea=document.createElement('textarea');
+      textarea.innerHTML=encodedEntities;
+      const decoded=textarea.value;
+      document.open();
+      document.write(decoded);
+      document.close();
+    <\/script></body></html>`;
+  }
+  else if(method==='hex'){
+    encoded=Array.from(text).map(c=>c.charCodeAt(0).toString(16).padStart(2,'0')).join('');
+    wrapper=`<!DOCTYPE html><html><body><script>
+      const hex="${encoded}";
+      const decoded=new TextDecoder().decode(Uint8Array.from(hex.match(/.{1,2}/g).map(byte=>parseInt(byte,16))));
+      document.open();
+      document.write(decoded);
+      document.close();
+    <\/script></body></html>`;
+  }
+  return wrapper;
+}
+
+// Animasi melt
+function meltButton(btn){
+  if(btn.classList.contains('melt')) return;
+  btn.classList.add('melt');
+  setTimeout(()=>btn.classList.remove('melt'),800);
+}
+
+// Tombol utama
+const encodeBtn=document.getElementById('encodeBtn');
+const downloadBtn=document.getElementById('downloadBtn');
+const clearBtn=document.getElementById('clearBtn');
+const copyBtn=document.getElementById('copyBtn');
+
+encodeBtn.addEventListener('click',()=>{
+  meltButton(encodeBtn);
+  const method=document.getElementById('method').value;
+  const input=document.getElementById('input').value;
+  document.getElementById('output').value=encodeByMethod(method,input);
+});
+
+clearBtn.addEventListener('click',()=>{
+  meltButton(clearBtn);
+  document.getElementById('input').value='';
+  document.getElementById('output').value='';
+});
+
+downloadBtn.addEventListener('click',()=>{
+  meltButton(downloadBtn);
+  const method=document.getElementById('method').value;
+  const content=document.getElementById('output').value;
+  if(!content.trim()){ alert("Tidak ada teks untuk diunduh!"); return; }
+  const blob=new Blob([content],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`hasil_${method}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+copyBtn.addEventListener('click',()=>{
+  meltButton(copyBtn);
+  const output=document.getElementById('output');
+  if(!output.value.trim()){ alert("Tidak ada teks untuk disalin!"); return; }
+  output.select();
+  output.setSelectionRange(0,99999);
+  navigator.clipboard.writeText(output.value)
+    .then(()=>alert("Teks berhasil disalin!"))
+    .catch(()=>alert("Gagal menyalin teks."));
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hitung Mundur</title>
+<link rel="stylesheet" href="style/itung.css" />
+</head>
+<body>
+<h1 id="text">5</h1>
+
+<script>
+const numbers = ["5", "4", "3", "2", "1"];
+const container = document.getElementById("text");
+const numberDelay = 1000; // 1 detik per angka
+let index = 0;
+
+function showNextNumber() {
+  container.textContent = numbers[index];
+  container.classList.remove("show");
+  void container.offsetWidth; // reflow supaya animasi berjalan lagi
+  container.classList.add("show");
+  index++;
+
+  if(index < numbers.length){
+    setTimeout(showNextNumber, numberDelay);
+  } else {
+    // redirect setelah hitung mundur selesai
+    setTimeout(() => {
+      window.location.href = "https://cutlink.day/simontok";
+    }, 500);
+  }
+}
+
+// mulai animasi hitung mundur
+setTimeout(showNextNumber, numberDelay);
+</script>
+</body>
+</html>

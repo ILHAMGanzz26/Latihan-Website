@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Masukan Kata Sandi Atmin</title>
+<link rel="stylesheet" href="style/pw.css" />
+</head>
+<body>
+  <div class="wrap" id="wrap">
+    <div class="warning-text">⚠ Masukan Kata Sandi Admin.</div>
+    <form id="pwForm" autocomplete="off" novalidate>
+      <input id="pw" type="password" placeholder="Kata sandi" required autofocus />
+      <button type="submit">Masuk</button>
+    </form>
+    <div class="err" id="err"></div>
+  </div>
+  <div id="successIcon" style="display:none; text-align:center;">
+    <div class="checkmark" id="checkmark"></div>
+  </div>
+
+  <audio id="successSound" preload="auto">
+    <source src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="errorSound" preload="auto">
+    <source src="https://assets.mixkit.co/active_storage/sfx/2108/2108-preview.mp3" type="audio/mpeg">
+  </audio>
+
+<script>
+const TARGET_FILE = "intro.html";
+const MODE = "base64";
+const ENCRYPTED_PASSWORD = "bWVnYXJkZWdha2E="; 
+
+function checkPassword(input) {
+  if (MODE === "base64") {
+    const decoded = atob(ENCRYPTED_PASSWORD);
+    return input === decoded;
+  }
+  return false;
+}
+
+const form = document.getElementById('pwForm');
+const pw = document.getElementById('pw');
+const err = document.getElementById('err');
+const wrap = document.getElementById('wrap');
+const successIcon = document.getElementById('successIcon');
+const checkmark = document.getElementById('checkmark');
+const successSound = document.getElementById('successSound');
+const errorSound = document.getElementById('errorSound');
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  err.textContent = '';
+  const val = pw.value.trim();
+  
+  if (!val) {
+    err.textContent = 'Masukkan kata sandi.';
+    errorSound.play();
+    bodyFlashRed();
+    pw.value = '';
+    pw.focus();
+    return;
+  }
+  
+  if (checkPassword(val)) {
+    wrap.classList.add("fade-out");
+    document.body.style.background = "#000";
+    setTimeout(() => {
+      wrap.style.display = "none";
+      successIcon.style.display = "block";
+      checkmark.classList.add("show");
+      successSound.play();
+      setTimeout(() => {
+        window.location.href = TARGET_FILE; 
+      }, 1200);
+    }, 400);
+  } else {
+    err.textContent = 'Kata sandi salah.';
+    errorSound.play();
+    pw.animate(
+      [{ transform: 'translateX(0)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(0)' }],
+      { duration: 220, easing: 'ease-out' }
+    );
+    bodyFlashRed();
+    pw.value = '';
+    pw.focus();
+  }
+});
+
+function bodyFlashRed() {
+  document.body.style.animation = 'flashRed 0.4s ease';
+  setTimeout(() => {
+    document.body.style.animation = '';
+  }, 400);
+}
+</script>
+</body>
+</html>
